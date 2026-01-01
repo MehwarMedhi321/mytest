@@ -17,13 +17,13 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | null>(null);
 
-// ⏱ 5 minutes
+// 5 minutes
 const CART_EXPIRY_TIME = 5 * 60 * 1000;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // ✅ Load cart on page load
+  // Load cart on page load
   useEffect(() => {
     try {
       const storedCart = localStorage.getItem("cart");
@@ -47,7 +47,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // ✅ Auto-clear cart when time expires
+  // Auto-clear cart when time expires
   useEffect(() => {
     if (cart.length === 0) return;
 
@@ -63,15 +63,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [cart]);
 
-  // ❌ DO NOT reset cart_time here
-  // ✅ Only store cart data
+  //  DO NOT reset cart_time here
+  // Only store cart data
   useEffect(() => {
     if (cart.length > 0) {
       localStorage.setItem("cart", JSON.stringify(cart));
     }
   }, [cart]);
 
-  // ✅ Set expiry time ONLY on first add
+  // Set expiry time ONLY on first add
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
       const safePrev = Array.isArray(prev) ? prev : [];

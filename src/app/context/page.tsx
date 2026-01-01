@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Image from "next/image";
 import { useCart } from "@/app/context/CartContext";
 import Link from "next/link";
@@ -8,22 +8,41 @@ import Link from "next/link";
 export default function Page() {
   const { cart, clearCart } = useCart();
 
- 
-  useEffect(() => {
-    if (cart.length > 0) {
-      const timer = setTimeout(() => {
-        clearCart();
-      }, 300000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [cart, clearCart]);
-
   const totalPrice = cart.reduce(
     (total, item) => total + item.price,
     0
   );
 
+  // ✅ Checkout handler (MongoDB save)
+  const handleCheckout = async () => {
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cart,
+          total: totalPrice,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Checkout failed");
+        return;
+      }
+
+      alert("Order placed successfully ✅");
+      clearCart(); // clear only after DB save
+    } catch (error) {
+      alert("Something went wrong");
+      console.error(error);
+    }
+  };
+
+  // ⛔ Empty / expired cart
   if (cart.length === 0) {
     return (
       <div className="container mx-auto max-w-4xl py-10 text-center">
@@ -47,7 +66,7 @@ export default function Page() {
       </h1>
 
       <p className="text-red-500 font-semibold mb-6">
-        ⏳ Cart will clear automatically in 5 mint
+        ⏳ Cart will clear automatically in 5 minutes
       </p>
 
       {/* Cart Items */}
@@ -83,7 +102,10 @@ export default function Page() {
           Total: ${totalPrice.toFixed(2)}
         </h2>
 
-        <button className="bg-orange-400 text-white font-bold px-8 py-3 rounded">
+        <button
+          onClick={handleCheckout}
+          className="bg-orange-400 text-white font-bold px-8 py-3 rounded hover:bg-orange-500"
+        >
           Proceed to Checkout
         </button>
       </div>
